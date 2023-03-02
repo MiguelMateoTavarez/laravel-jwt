@@ -13,8 +13,13 @@ return [
     |
     */
 
+    // 'defaults' => [
+    //     'guard' => 'web',
+    //     'passwords' => 'users',
+    // ],
+
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'api',
         'passwords' => 'users',
     ],
 
@@ -40,6 +45,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+        ]
     ],
 
     /*
@@ -111,5 +120,8 @@ return [
     */
 
     'password_timeout' => 10800,
+
+    'passport_client_id' => env('PASSPORT_CLIENT_ID'),
+    'passport_client_secret' => env('PASSPORT_CLIENT_SECRET'),
 
 ];
