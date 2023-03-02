@@ -20,28 +20,26 @@ class AuthController extends Controller
             return response()->json(['error' => $validator->errors()], 401);
         }
 
-        $credentials = request(['email', 'password']);
+        $tokenRequest = Request::create('/oauth/token', 'POST', [
+            'grant_type' => 'password',
+            'client_id' => config('auth.passport_client_id'),
+            'client_secret' => config('auth.passport_client_secret'),
+            'username' => $request->email,
+            'password' => $request->password,
+        ]);
 
-        if(!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $response = app()->handle($tokenRequest);
+
+        if($response->getStatusCode() != 200){
+            return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        $user = $request->user();
-        $tokenResult = $user->createToken($credentials['email']);
-        $token = $tokenResult->token;
-
-        if($request->remember_me) {
-            $token->expires_at = Carbon::now()->addWeeks(1);
-        }
-
-        $token->save();
+        $data = json_decode($response->getContent(), true);
 
         return response()->json([
-            'access_token' => $tokenResult->accessToken,
+            'access_token' => $data['access_token'],
             'token_type' => 'Bearer',
-            'expires_at' => Carbon::parse(
-                $tokenResult->token->expires_at
-            )->toDateTimeString()
+            'expires_in' => $data['expires_in'],
         ]);
     }
 }
